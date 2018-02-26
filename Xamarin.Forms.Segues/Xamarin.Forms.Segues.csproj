@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;xamarinios10</TargetFrameworks>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(TargetFramework)' == 'xamarinios10'">
+		<TargetFrameworkIdentifier>Xamarin.iOS</TargetFrameworkIdentifier>
+		<TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
+
+		<!-- FIXME: Sort this out -->
+		<LanguageTargets Condition="Exists('$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets')">$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets</LanguageTargets>
+		<LanguageTargets Condition="!Exists('$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets')">/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/msbuild/iOS/Xamarin.iOS.CSharp.targets</LanguageTargets>
+	</PropertyGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'xamarinios10'">
+		<Reference Include="System" />
+		<Reference Include="System.Xml" />
+		<Reference Include="System.Core" />
+		<Reference Include="Xamarin.iOS" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Xamarin.Forms" Version="2.5.0.280555" />
+	</ItemGroup>
+</Project>

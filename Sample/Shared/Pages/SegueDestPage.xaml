@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:s="clr-namespace:Xamarin.Forms.Segues;assembly=Xamarin.Forms.Segues"
+	x:Class="Sample.SegueDestPage">
+	<StackLayout
+		Orientation="Vertical"
+		VerticalOptions="Center">
+		<Button
+			Text="Pop with default Segue"
+			Command="{s:Segue Pop}" />
+		<Button
+			Text="Pop with DownUp"
+			Command="{s:Segue Pop, Type=DownUp}" />
+		<Button
+			Text="Pop with Fade"
+			Command="{s:Segue Pop, Type=Fade}" />
+	</StackLayout>
+</ContentPage>

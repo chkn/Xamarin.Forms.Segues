@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:s="clr-namespace:Xamarin.Forms.Segues;assembly=Xamarin.Forms.Segues"
+	xmlns:sys="clr-namespace:System;assembly=mscorlib"
+	xmlns:local="using:Sample"
+	x:Class="Sample.SeguePage">
+	<ContentPage.BindingContext>
+		<local:SegueModel />
+	</ContentPage.BindingContext>
+	<StackLayout Orientation="Vertical">
+		<Label Text=" Segue Action" BackgroundColor="LightGray" />
+		<ListView SelectedItem="{Binding Action, Mode=TwoWay}">
+			<ListView.ItemsSource>
+				<sys:Enum x:FactoryMethod="GetValues" x:Arguments="{x:Type s:SegueAction}" />
+			</ListView.ItemsSource>
+		</ListView>
+		<Label Text=" Segue Type" BackgroundColor="LightGray" />
+		<ListView ItemsSource="{Binding TypeNames}" SelectedItem="{Binding Type, Mode=TwoWay}" />
+		<Button Text="Execute Segue" Clicked="Handle_Clicked" />
+	</StackLayout>
+</ContentPage>

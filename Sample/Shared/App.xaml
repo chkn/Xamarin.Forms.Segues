@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+	xmlns="http://xamarin.com/schemas/2014/forms"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="using:Sample"
+	x:Class="Sample.App">
+	<Application.MainPage>
+		<NavigationPage>
+			<x:Arguments>
+				<local:SeguePage Title="Segues"/>
+			</x:Arguments>
+		</NavigationPage>
+	</Application.MainPage>
+</Application>
