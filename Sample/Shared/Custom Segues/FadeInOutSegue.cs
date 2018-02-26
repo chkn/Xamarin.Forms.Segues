@@ -11,18 +11,22 @@ namespace Sample {
 		{
 			// Save inital values
 			var origSrcOpacity = SourcePage.Opacity;
-			var origDestOpacity = destination.Opacity;
+			var origDestOpacity = 0d;
+			if (destination != null) {
+				origDestOpacity = destination.Opacity;
+				destination.Opacity = 0;
+			}
 
 			// Fade out source and set dest to transparent
 			await SourcePage.FadeTo (0);
-			destination.Opacity = 0;
 
 			// Update the navigation stack
 			await base.ExecuteAsync (destination);
 
 			// Restore opacities
 			SourcePage.Opacity = origSrcOpacity;
-			await destination.FadeTo (origDestOpacity);
+			if (destination != null)
+				await destination.FadeTo (origDestOpacity);
 		}
 	}
 }

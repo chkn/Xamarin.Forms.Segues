@@ -106,13 +106,7 @@ namespace Xamarin.Forms.Segues {
 		}
 
 		Page GetDestinationForPop ()
-		{
-			var nav = SourceElement.Navigation;
-			return
-				GetSecondToTop (nav.ModalStack, SourcePage) ??
-				GetSecondToTop (nav.NavigationStack, SourcePage) ??
-				Application.Current.MainPage; // FIXME: not always correct (e.g. it could've been a child page of this)
-		}
+			=> GetSecondToTop (SourceElement.Navigation.NavigationStack, SourcePage);
 
 		static bool IsTop (IReadOnlyList<Page> stack, Page page)
 		{
@@ -156,6 +150,10 @@ namespace Xamarin.Forms.Segues {
 		/// <summary>
 		/// Executes this <see cref="Segue"/> with the specified destination.
 		/// </summary>
+		/// <param name="destination">
+		///  Destination <see cref="Page"/>. May be <c>null</c> in the case of
+		///   <see cref="SegueAction.Pop"/> when the <see cref="SourcePage"/> is
+		///   presented modally.</param>
 		/// <remarks>
 		/// Subclasses should override this method to perform any custom animation.
 		///  Call <c>base.ExecuteAsync</c> to effect the appropriate change to the
