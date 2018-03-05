@@ -9,7 +9,21 @@
 	<ContentPage.BindingContext>
 		<local:SegueModel />
 	</ContentPage.BindingContext>
-	<StackLayout Orientation="Vertical">
+	<StackLayout Orientation="Vertical" Spacing="0">
+		<Button
+			Text="Push to a native screen"
+			Command="{s:Segue Push}">
+			<Button.CommandParameter>
+				<local:NativeSegueDest/>
+			</Button.CommandParameter>
+		</Button>
+		<Button
+			Text="Push to a native screen with custom segue"
+			Command="{s:Segue Push, Type=Gate}">
+			<Button.CommandParameter>
+				<local:NativeSegueDest/>
+			</Button.CommandParameter>
+		</Button>
 		<Label Text=" Segue Action" BackgroundColor="LightGray" />
 		<ListView SelectedItem="{Binding Action, Mode=TwoWay}">
 			<ListView.ItemsSource>

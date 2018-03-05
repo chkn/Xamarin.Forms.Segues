@@ -94,6 +94,7 @@
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="LaunchScreen.storyboard" />
+    <InterfaceDefinition Include="NativeSegueDest.xib" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -102,6 +103,11 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
+    <Compile Include="NativeSegueDest.cs" />
+    <Compile Include="NativeSegueDest.designer.cs">
+      <DependentUpon>NativeSegueDest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GateSegue.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="2.5.0.280555" />

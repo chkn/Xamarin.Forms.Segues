@@ -6,7 +6,9 @@
 	x:Class="Sample.SegueDestPage">
 	<StackLayout
 		Orientation="Vertical"
+		HorizontalOptions="Center"
 		VerticalOptions="Center">
+		<Label Text="{Binding Path=Type, StringFormat='You segued here with {0}'}"/>
 		<Button
 			Text="Pop with default Segue"
 			Command="{s:Segue Pop}" />
@@ -16,5 +18,11 @@
 		<Button
 			Text="Pop with Fade"
 			Command="{s:Segue Pop, Type=Fade}" />
+		<Button
+			Text="Pop with Flip"
+			Command="{s:Segue Pop, Type=Flip}" />
+		<Button
+			Text="Pop with Gate"
+			Command="{s:Segue Pop, Type=Gate}" />
 	</StackLayout>
 </ContentPage>

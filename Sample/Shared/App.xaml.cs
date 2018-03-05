@@ -8,12 +8,10 @@ namespace Sample {
 	public partial class App : Application {
 		public App ()
 		{
-			// First, we initialize the Segue runtime.
-			Segue.Init ();
-
-			// Next, we must register all our custom types and give them succinct names...
+			// Register all our cross-platform custom segue types and give them succinct names...
 			Segue.RegisterType<DownUpSegue> ("DownUp");
 			Segue.RegisterType<FadeInOutSegue> ("Fade");
+			Segue.RegisterType<FlipSegue> ("Flip");
 
 			InitializeComponent ();
 		}

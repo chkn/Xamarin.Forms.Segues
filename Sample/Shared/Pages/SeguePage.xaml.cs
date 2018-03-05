@@ -9,7 +9,7 @@ namespace Sample {
 
 		public SeguePage () => InitializeComponent ();
 
-		void Handle_Clicked (object sender, System.EventArgs e)
+		async void Handle_Clicked (object sender, System.EventArgs e)
 		{
 			var model = (SegueModel)BindingContext;
 
@@ -19,18 +19,16 @@ namespace Sample {
 			//  we've registered, falling back to the default Segue type.
 			var segue = Segue.Create (model.Type) ?? new Segue ();
 
-			// Every segue must have its SourceElement set before it is executed
-			segue.SourceElement = (VisualElement)sender;
-
 			// Optionally, we can override the default segue action with the one we want
 			segue.Action = model.Action;
 
 			// Create our destination page and set the binding context
-			var destination = new SegueDestPage ();
-			destination.BindingContext = model;
+			var destination = new SegueDestPage {
+				BindingContext = model
+			};
 
 			// Execute the segue
-			segue.Execute (destination);
+			await segue.ExecuteAsync ((VisualElement)sender, destination);
 		}
 	}
 }

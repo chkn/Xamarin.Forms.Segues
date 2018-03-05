@@ -7,26 +7,6 @@ using System.Collections.Generic;
 namespace Xamarin.Forms.Segues {
 
 	/// <summary>
-	/// A <see cref="ICommand"/> that implements navigation between <see cref="Page"/>s.
-	/// </summary>
-	public interface ISegue : ICommand {
-
-		/// <summary>
-		/// Gets or sets the action that this segue should perform.
-		/// </summary>
-		SegueAction Action { get; set; }
-
-		/// <summary>
-		/// Gets or sets the <see cref="VisualElement"/> that serves as the source for this segue.
-		/// </summary>
-		/// <remarks>
-		/// This property must be set before the segue is executed. It is automatically
-		///  set when the segue is created in XAML using the {Segue} markup extension.
-		/// </remarks>
-		VisualElement SourceElement { get; set; }
-	}
-
-	/// <summary>
 	/// A navigational transition from one <see cref="Page"/> to another.
 	/// </summary>
 	/// <remarks>
@@ -61,7 +41,7 @@ namespace Xamarin.Forms.Segues {
 		public Page SourcePage {
 			get {
 				if (sourcePage == null)
-					sourcePage = GetPage (sourceElem);
+					sourcePage = sourceElem.GetPage ();
 				return sourcePage;
 			}
 		}
@@ -69,61 +49,13 @@ namespace Xamarin.Forms.Segues {
 
 		bool IsCustomSegue => GetType () != typeof (Segue);
 
+		// FIXME: Make this work for modal
+		Page GetDestinationForPop ()
+			=> SourceElement.Navigation.NavigationStack.GetNextIfTop (SourcePage);
+
 		// Prevents link out
 		public static void Init ()
 		{
-		}
-
-		internal static Task ExecuteSegueAction (ISegue seg, Page dest, bool animated)
-		{
-			var src = seg.SourceElement;
-			if (src == null)
-				throw new InvalidOperationException ($"{nameof(SourceElement)} property must be set before segue is executed");
-
-			switch (seg.Action) {
-
-			case SegueAction.Push: return src.Navigation.PushAsync (dest, animated);
-			case SegueAction.Modal: return src.Navigation.PushModalAsync (dest, animated);
-
-			case SegueAction.Pop: {
-				var srcPage = (seg as Segue)?.SourcePage ?? GetPage (src);
-				if (srcPage == null)
-					throw new InvalidOperationException ($"{nameof(SourceElement)} must be on a Page");
-				var nav = src.Navigation;
-				if (IsTop (nav.ModalStack, srcPage))
-					return nav.PopModalAsync (animated);
-				if (IsTop (nav.NavigationStack, srcPage))
-					return nav.PopAsync (animated);
-				nav.RemovePage (srcPage);
-				return Task.CompletedTask;
-			}
-
-			case SegueAction.MainPage:
-				Application.Current.MainPage = dest;
-				return Task.CompletedTask;
-			}
-			throw new NotImplementedException (seg.Action.ToString ());
-		}
-
-		Page GetDestinationForPop ()
-			=> GetSecondToTop (SourceElement.Navigation.NavigationStack, SourcePage);
-
-		static bool IsTop (IReadOnlyList<Page> stack, Page page)
-		{
-			var cnt = stack.Count;
-			return cnt > 0 && stack [cnt - 1] == page;
-		}
-		static Page GetSecondToTop (IReadOnlyList<Page> stack, Page page)
-		{
-			var cnt = stack.Count;
-			return (cnt > 1 && stack [cnt - 1] == page)? stack [cnt - 2] : null;
-		}
-
-		static Page GetPage (Element elem)
-		{
-			while (elem != null && !(elem is Page))
-				elem = elem.Parent;
-			return (Page)elem;
 		}
 
 		#region ICommand
@@ -152,34 +84,104 @@ namespace Xamarin.Forms.Segues {
 		/// </summary>
 		/// <param name="destination">
 		///  Destination <see cref="Page"/>. May be <c>null</c> in the case of
-		///   <see cref="SegueAction.Pop"/> when the <see cref="SourcePage"/> is
-		///   presented modally.</param>
+		///   <see cref="SegueAction.Pop"/> when the <see cref="SourcePage"/>
+		///   was not pushed.
+		/// </param>
 		/// <remarks>
 		/// Subclasses should override this method to perform any custom animation.
 		///  Call <c>base.ExecuteAsync</c> to effect the appropriate change to the
 		///  navigation stack.
 		/// </remarks>
 		protected virtual Task ExecuteAsync (Page destination)
-			=> ExecuteSegueAction (this, destination, animated: !IsCustomSegue);
+		{
+			var animated = !IsCustomSegue;
+			switch (Action) {
 
-		public async void Execute (Page destination)
+				case SegueAction.Push:
+					return SourceElement.Navigation.PushAsync (destination, animated);
+				case SegueAction.Modal:
+					return SourceElement.Navigation.PushModalAsync (destination, animated);
+
+				case SegueAction.Pop: {
+						var srcPage = SourcePage;
+						if (srcPage == null)
+							throw new InvalidOperationException ($"{nameof (SourceElement)} must be on a Page");
+						var nav = srcPage.Navigation;
+						if (nav.ModalStack.IsTop (srcPage))
+							return nav.PopModalAsync (animated);
+						if (nav.NavigationStack.IsTop (srcPage))
+							return nav.PopAsync (animated);
+						nav.RemovePage (srcPage);
+						return Task.CompletedTask;
+					}
+
+				case SegueAction.MainPage:
+					Application.Current.MainPage = destination;
+					return Task.CompletedTask;
+			}
+			throw new NotImplementedException (Action.ToString ());
+		}
+
+		Task ExecuteInternal (Page destination)
 		{
 			// Before we can call ExecuteAsync, we must ensure that the destination is
 			//  passed for Pop. Our built-in seg doesn't care, but subclasses might.
 			if (Action == SegueAction.Pop && IsCustomSegue)
 				destination = GetDestinationForPop ();
 
-			await ExecuteAsync (destination);
+			return ExecuteAsync (destination);
 		}
 
-		bool ICommand.CanExecute (object parameter) => CanExecute (parameter as Page);
-		void ICommand.Execute (object parameter) => Execute ((Page)parameter);
+		public async Task ExecuteAsync (VisualElement sourceElement, Page destination)
+		{
+			if (sourceElement == null)
+				throw new ArgumentNullException (nameof (sourceElement));
+
+			var originalSource = SourceElement;
+			SourceElement = sourceElement;
+			try {
+				await ExecuteInternal (destination);
+			} finally {
+				SourceElement = originalSource;
+			}
+		}
+
+		bool ICommand.CanExecute (object parameter)
+		{
+			#if !NETSTANDARD2_0
+			// If this is the native object, we will delegate to PlatformSegue
+			if (PlatformSegue.IsNativePage (parameter))
+				return !IsCustomSegue;
+			#endif
+			return CanExecute (parameter as Page);
+		}
+
+		async void ICommand.Execute (object parameter)
+		{
+			if (SourceElement == null)
+				throw new InvalidOperationException ($"{nameof (SourceElement)} property must be set before segue is executed");
+
+			#if !NETSTANDARD2_0
+			// If this is the native object, we will delegate to PlatformSegue
+			if (PlatformSegue.IsNativePage (parameter)) {
+				if (IsCustomSegue)
+					throw new ArgumentException ("Custom segues must derive from PlatformSegue to handle native objects", nameof(parameter));
+
+				var platSeg = new PlatformSegue {
+					Action = Action
+				};
+				await platSeg.ExecuteInternal (SourceElement, parameter);
+				return;
+			}
+			#endif
+			await ExecuteInternal ((Page)parameter);
+		}
 
 		#endregion
 
 		#region Registry
 
-		static Dictionary<string,Type> registry;
+		static Dictionary<string, Type> registry;
 
 		public static IEnumerable<string> TypeNames => registry?.Keys ?? Enumerable.Empty<string> ();
 
@@ -187,7 +189,7 @@ namespace Xamarin.Forms.Segues {
 			where TSegue : ISegue, new()
 		{
 			if (registry == null)
-				registry = new Dictionary<string,Type> ();
+				registry = new Dictionary<string, Type> ();
 			registry [typeName] = typeof (TSegue);
 		}
 

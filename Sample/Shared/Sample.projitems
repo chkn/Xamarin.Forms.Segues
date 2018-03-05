@@ -32,6 +32,7 @@
       <DependentUpon>SegueDestPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Custom Segues\FadeInOutSegue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Custom Segues\FlipSegue.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Custom Segues\" />
