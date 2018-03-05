@@ -9,13 +9,7 @@ using Xamarin.Forms.Xaml;
 namespace Xamarin.Forms.Segues {
 
 	[ContentProperty (nameof (SegueExtension.Action))]
-	public class SegueExtension : BindableObject, IMarkupExtension<ISegue> {
-
-		public static readonly BindableProperty ActionProperty =
-			BindableProperty.Create (nameof (Action), typeof (string), typeof (SegueExtension));
-
-		public static readonly BindableProperty TypeProperty =
-			BindableProperty.Create (nameof (Type), typeof (string), typeof (SegueExtension));
+	public class SegueExtension : IMarkupExtension<ISegue> {
 
 		/// <summary>
 		/// Gets or sets the action that this segue will perform.
@@ -23,10 +17,7 @@ namespace Xamarin.Forms.Segues {
 		/// <remarks>
 		/// Values should correspond to values of the <see cref="SegueAction"/> enumeration. 
 		/// </remarks>
-		public string Action {
-			get => (string)GetValue (ActionProperty);
-			set => SetValue (ActionProperty, value);
-		}
+		public string Action { get; set; }
 
 		/// <summary>
 		/// Gets or sets the type of custom segue to be used, or <c>null</c> to use the default
@@ -34,10 +25,7 @@ namespace Xamarin.Forms.Segues {
 		/// </summary>
 		/// <value>The type name.</value>
 		/// <remarks>Type names for custom segues must be registered by calling <see cref="Segue.RegisterType"/>.</remarks>
-		public string Type {
-			get => (string)GetValue (TypeProperty);
-			set => SetValue (TypeProperty, value);
-		}
+		public string Type { get; set; }
 
 		public ISegue ProvideValue (IServiceProvider serviceProvider)
 		{
@@ -49,7 +37,7 @@ namespace Xamarin.Forms.Segues {
 			if (target == null)
 				XamlError ("Segue may only be used on a VisualElement", serviceProvider);
 
-			var segue = Segue.Create (Type) ?? new Segue ();
+			var segue = (Type == null)? new Segue () : Segue.Create (Type);
 			if (segue == null)
 				XamlError ($"Unknown segue type \"{Type}\"", serviceProvider);
 
