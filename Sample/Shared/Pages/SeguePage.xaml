@@ -14,14 +14,18 @@
 			Text="Push to native screen (iOS only)"
 			Command="{s:Segue Push}">
 			<Button.CommandParameter>
-				<local:NativeSegueDest/>
+				<DataTemplate>
+					<local:NativeSegueDest/>
+				</DataTemplate>
 			</Button.CommandParameter>
 		</Button>
 		<Button
 			Text="Push to native screen with custom segue (iOS only)"
 			Command="{s:Segue Push, Type=Gate}">
 			<Button.CommandParameter>
-				<local:NativeSegueDest/>
+				<DataTemplate>
+					<local:NativeSegueDest/>
+				</DataTemplate>
 			</Button.CommandParameter>
 		</Button>
 		<Label Text=" Segue to a Forms Page" BackgroundColor="LightGray" />

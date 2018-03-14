@@ -278,6 +278,9 @@ namespace Xamarin.Forms.Segues {
 
 			switch (parameter) {
 
+			// FIXME: Ideally, we could know the type created by the template w/o instantiating it
+			//  (we can't instantiate it here)
+			case DataTemplate _: return true;
 			case Page page: return CanExecute (page);
 			case NativePage native: return CanExecute (native);
 			}
@@ -287,6 +290,9 @@ namespace Xamarin.Forms.Segues {
 		{
 			if (sourceElem == null)
 				throw new InvalidOperationException ("SourceElement property must be set before segue is executed");
+
+			if (parameter is DataTemplate template)
+				parameter = template.CreateContent ();
 
 			await ExecuteInternal (sourceElem, parameter);
 		}

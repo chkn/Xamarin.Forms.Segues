@@ -148,11 +148,17 @@ namespace Xamarin.Forms.Segues {
 
 		bool ICommand.CanExecute (object parameter)
 		{
+			// FIXME: Ideally, we could know the type created by the template w/o instantiating it
+			//  (we can't instantiate it here)
+			if (parameter is DataTemplate)
+				return true;
+
 			#if !NETSTANDARD2_0
 			// If this is the native object, we will delegate to PlatformSegue
 			if (PlatformSegue.IsNativePage (parameter))
 				return !IsCustomSegue;
 			#endif
+
 			return CanExecute (parameter as Page);
 		}
 
@@ -160,6 +166,9 @@ namespace Xamarin.Forms.Segues {
 		{
 			if (SourceElement == null)
 				throw new InvalidOperationException ($"{nameof (SourceElement)} property must be set before segue is executed");
+
+			if (parameter is DataTemplate template)
+				parameter = template.CreateContent ();
 
 			#if !NETSTANDARD2_0
 			// If this is the native object, we will delegate to PlatformSegue
