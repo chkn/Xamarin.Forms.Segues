@@ -9,7 +9,7 @@ using Xamarin.Forms.Xaml;
 namespace Xamarin.Forms.Segues {
 
 	[ContentProperty (nameof (SegueExtension.Action))]
-	public class SegueExtension : IMarkupExtension<ISegue> {
+	public class SegueExtension : IMarkupExtension<Segue> {
 
 		/// <summary>
 		/// Gets or sets the action that this segue will perform.
@@ -20,14 +20,13 @@ namespace Xamarin.Forms.Segues {
 		public string Action { get; set; }
 
 		/// <summary>
-		/// Gets or sets the type of custom segue to be used, or <c>null</c> to use the default
-		///  segue type for the given <see cref="Action"/>. 
+		/// Gets or sets the type of custom segue to be created.
 		/// </summary>
-		/// <value>The type name.</value>
+		/// <value>The type name, as passed to <see cref="Segue.RegisterType"/>, or <c>null</c> to use the default type, <see cref="Segue"/>.</value>
 		/// <remarks>Type names for custom segues must be registered by calling <see cref="Segue.RegisterType"/>.</remarks>
 		public string Type { get; set; }
 
-		public ISegue ProvideValue (IServiceProvider serviceProvider)
+		public Segue ProvideValue (IServiceProvider serviceProvider)
 		{
 			var targetProvider = serviceProvider.GetService (typeof (IProvideValueTarget)) as IProvideValueTarget;
 			if (targetProvider == null)

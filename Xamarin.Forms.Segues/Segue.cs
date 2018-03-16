@@ -14,20 +14,26 @@ namespace Xamarin.Forms.Segues {
 	///  call <see cref="Register"/> to register your subclass. Then, create them in XAML using
 	///  the {Segue} markup extension, or in code using the <see cref="Create"/> method. 
 	/// </remarks>
-	public class Segue : ISegue {
+	public class Segue : BindableObject, ICommand {
 
-		public SegueAction Action { get; set; }
+		public static readonly BindableProperty ActionProperty =
+			BindableProperty.Create (nameof (Action), typeof (SegueAction), typeof (Segue), default (SegueAction));
+
+		public static readonly BindableProperty SourceElementProperty =
+			BindableProperty.Create (nameof (SourceElement), typeof (VisualElement), typeof (Segue), propertyChanged: (s, _, __) => {
+				// FIXME: Also listen for value's parent to change to invalidate this
+				((Segue)s).sourcePage = null;
+			});
+
+		public SegueAction Action {
+			get => (SegueAction)GetValue (ActionProperty);
+			set => SetValue (ActionProperty, value);
+		}
 
 		public VisualElement SourceElement {
-			get => sourceElem;
-			set {
-				if (sourceElem != value) {
-					sourceElem = value;
-					sourcePage = null;
-				}
-			}
+			get => (VisualElement)GetValue (SourceElementProperty);
+			set => SetValue (SourceElementProperty, value);
 		}
-		VisualElement sourceElem;
 
 		/// <summary>
 		/// A convenience property to return the <see cref="Page"/> of the <see cref="SourceElement"/>.
@@ -40,9 +46,8 @@ namespace Xamarin.Forms.Segues {
 		/// </remarks>
 		public Page SourcePage {
 			get {
-				// FIXME: Do we need to listen for sourceElem's parent to change to invalidate this?
 				if (sourcePage == null)
-					sourcePage = sourceElem.GetPage ();
+					sourcePage = SourceElement.GetPage ();
 				return sourcePage;
 			}
 		}
@@ -86,11 +91,25 @@ namespace Xamarin.Forms.Segues {
 		/// This method calls <see cref="CanExecuteOverride(Type)"/> after ensuring
 		///  the given <see cref="Type"/> derives from the proper base type.
 		/// </remarks>
-		public bool CanExecute (Type destinationType) => CanExecuteInternal (destinationType);
+		public bool CanExecute (Type destinationType)
+			=> CanExecuteInternal (destinationType);
 
+		// We need this to allow PlatformSegue to ammend the allowed types.
 		internal virtual bool CanExecuteInternal (Type ty)
 			=> typeof (Page).IsAssignableFrom (ty)
 			&& CanExecuteOverride (ty);
+
+		/// <summary>
+		/// Returns a value indicating if this <see cref="Segue"/> can be executed
+		///  with the given destination <see cref="Page"/>.
+		/// </summary>
+		/// <remarks>
+		/// This method calls <see cref="CanExecuteOverride(Type)"/> with the <see cref="Type"/>
+		///   of the passed destination <see cref="Page"/>.
+		/// </remarks>
+		public bool CanExecute (Page destination)
+			// Can call CanExecuteOverride directly since we know it derives from Page
+			=> CanExecuteOverride (destination.GetType ());
 
 		/// <summary>
 		/// Returns a value indicating if this <see cref="Segue"/> can be executed
@@ -238,7 +257,7 @@ namespace Xamarin.Forms.Segues {
 		public static IEnumerable<string> TypeNames => registry?.Keys ?? Enumerable.Empty<string> ();
 
 		public static void RegisterType<TSegue> (string typeName)
-			where TSegue : ISegue, new()
+			where TSegue : Segue, new()
 		{
 			if (registry == null)
 				registry = new Dictionary<string, Type> ();
@@ -253,10 +272,10 @@ namespace Xamarin.Forms.Segues {
 		/// The segue type must have previously been registered by calling <see cref="RegisterType"/>.
 		/// </remarks>
 		/// <returns>The segue, or null.</returns>
-		public static ISegue Create (string typeName)
+		public static Segue Create (string typeName)
 		{
 			if (typeName != null && registry != null && registry.TryGetValue (typeName, out var type))
-				return (ISegue)Activator.CreateInstance (type);
+				return (Segue)Activator.CreateInstance (type);
 
 			return null;
 		}
