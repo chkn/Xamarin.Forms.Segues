@@ -14,22 +14,46 @@ Simply add this xmlns to the root element of your XAML:
 xmlns:s="clr-namespace:Xamarin.Forms.Segues;assembly=Xamarin.Forms.Segues"
 ```
 
-Then, you can add a segue to anything that has a `Command` property, such as a `Button`. The `CommandParameter` property is used to supply the `Page` that will be the destination of the segue. This example assumes you have a class called `NextPage` in your project:
+Then, you can add a segue to anything that has a `Command` property, such as a `Button`. The `CommandParameter` property is used to supply the type of `Page` that will be the destination of the segue. This example assumes you have a class called `NextPage` in your project:
 
 ```XML
 <Button Text="Go to next page"
-        Command="{s:Segue Push}">
-    <Button.CommandParameter>
-		<local:NextPage />
-    </Button.CommandParameter>
-</Button>
+        Command="{s:Segue Push}"
+        CommandParameter="{x:Type local:NextPage}" />
 ```
 
 Note that the `{s:Segue}` markup extension creates and configures the `Segue` object. In this example, we specify a `Push` segue, but you could also specify any of the other supported [actions](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Xamarin.Forms.Segues/SegueAction.cs).
 
+#### Passing data
+
+If you need to configure the page you are seguing to, you can use a `DataTemplate`. Here is the previous example, modified to set the `BindingContext` of the destination page to the `BindingContext` of the source page:
+
+```XML
+<Button Text="Go to next page with data"
+        Command="{s:Segue Push}">
+    <Button.CommandParameter>
+        <DataTemplate>
+            <local:NextPage BindingContext="{Binding}" />
+        </DataTemplate>
+    </Button.CommandParameter>
+</Button>
+```
+
 ### Segue from Code
 
-Creating and configuring a segue from code is not much harder. [Here is an example.](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Sample/Shared/Pages/SeguePage.xaml.cs#L16)
+Creating and configuring a segue from code is not much harder:
+
+```csharp
+var segue = new Segue ();
+
+// Optionally, we can override the default segue action (Push) with the one we want
+segue.Action = SegueAction.Modal;
+
+// Execute the segue, passing the source element that triggered it and the destination Page
+await segue.ExecuteAsync (source, destination);
+```
+
+[Here is another example of creating a segue in code.](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Sample/Shared/Pages/SeguePage.xaml.cs#L16)
 
 ## Custom Segues
 

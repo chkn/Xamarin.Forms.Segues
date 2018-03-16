@@ -18,7 +18,7 @@ namespace Sample {
 				Action = SegueAction.Pop
 			};
 
-			// Execute the segue. Destination can be omitted because this is a Pop.
+			// Execute the segue. Destination argument can be omitted because this is a Pop.
 			await seg.ExecuteAsync (this);
 		}
 	}
