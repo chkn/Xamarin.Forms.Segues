@@ -13,14 +13,11 @@ namespace Sample {
 
 			// Save initial values
 			var origSrcRy = src.RotationY;
-			var origDestRy = 0d;
-			if (dest != null) {
-				origDestRy = dest.RotationY;
-				dest.RotationY = -90;
-			}
+			var origDestRy = dest.RotationY;
 
-			// Animate SourcePage
+			// Animate SourcePage and set (but do not animate) dest page
 			await src.RotateYTo (90, length: 150);
+			dest.RotationY = -90;
 
 			// Actually switch pages
 			await base.ExecuteAsync (destination);
@@ -30,8 +27,7 @@ namespace Sample {
 			src.RotationY = origSrcRy;
 
 			// Animate up destination content
-			if (dest != null)
-				await dest.RotateYTo (origDestRy, length: 150);
+			await dest.RotateYTo (origDestRy, length: 150);
 		}
 	}
 }

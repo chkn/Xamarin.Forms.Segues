@@ -9,6 +9,8 @@
 		HorizontalOptions="Center"
 		VerticalOptions="Center">
 		<Label Text="{Binding Path=Type, StringFormat='You segued here with {0}'}"/>
+
+		<!-- Note that CommandParameter is omitted for Pop segues -->
 		<Button
 			Text="Pop with default Segue"
 			Command="{s:Segue Pop}" />

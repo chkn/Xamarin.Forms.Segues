@@ -15,14 +15,11 @@ namespace Sample {
 
 			// Save initial values
 			var origSrcTy = src.TranslationY;
-			var origDestTy = 0d;
-			if (dest != null) {
-				origDestTy = dest.TranslationY;
-				dest.TranslationY = src.Height;
-			}
+			var origDestTy = dest.TranslationY;
 
 			// Animate SourcePage to bottom and also set (but do not animate) destination page to bottom
 			await src.TranslateTo (0, src.Height, easing: Easing.SpringIn);
+			dest.TranslationY = src.Height;
 
 			// Actually switch pages
 			await base.ExecuteAsync (destination);
@@ -32,8 +29,7 @@ namespace Sample {
 			src.TranslationY = origSrcTy;
 
 			// Animate up destination content
-			if (dest != null)
-				await dest.TranslateTo (0, origDestTy, easing: Easing.SpringOut);
+			await dest.TranslateTo (0, origDestTy, easing: Easing.SpringOut);
 		}
 	}
 }

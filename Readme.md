@@ -65,6 +65,6 @@ The `PlatformSegue` class (currently only implemented for iOS) integrates with t
 
 [Example of custom platform segue for iOS](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Sample/iOS/GateSegue.cs)
 
-[Example of seguing from Page to UIViewController in XAML](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Sample/Shared/Pages/SeguePage.xaml#L13-L26)
+[Example of seguing from Page to UIViewController in XAML](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Sample/Shared/Pages/SeguePage.xaml#L14-L35)
 
 [Example of seguing back from UIViewController in code](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Sample/iOS/NativeSegueDest.cs#L15)

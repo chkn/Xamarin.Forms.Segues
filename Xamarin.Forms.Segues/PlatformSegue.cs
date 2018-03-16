@@ -3,69 +3,24 @@ using System;
 using System.Windows.Input;
 using System.Threading.Tasks;
 
-#if __IOS__
-using Xamarin.Forms.Platform.iOS;
-using NativePage = UIKit.UIViewController;
-#else
-#error Unknown platform
-#endif
-
 namespace Xamarin.Forms.Segues {
+	#if __IOS__
+	using Xamarin.Forms.Platform.iOS;
+	using Platform = Xamarin.Forms.Platform.iOS.Platform;
+	using NativePage = UIKit.UIViewController;
+	#else
+	#error Unknown platform
+	#endif
 
-	public class PlatformSegue : PlatformEffect, ISegue {
-
-		public SegueAction Action { get; set; }
-
-		VisualElement ISegue.SourceElement {
-			get => sourceElem;
-			set => sourceElem = value;
-		}
-		VisualElement sourceElem;
-
-		bool IsCustomSegue => GetType () != typeof (PlatformSegue);
-
-		bool attaching;
+	// FIXME: This needs to be better integrated into each platform impl.
+	public class PlatformSegue : Segue {
 
 		protected NativePage NativeSource { get; private set; }
 
+		bool IsSubclass => GetType () != typeof (PlatformSegue);
+
 		protected internal PlatformSegue ()
 		{
-		}
-
-		void Attach ()
-		{
-			if (sourceElem == null)
-				return;
-			var page = sourceElem.GetPage ();
-			if (page == null)
-				throw new InvalidOperationException ("Source element must be on a Page");
-			attaching = true;
-			page.Effects.Add (this);
-		}
-		protected override void OnAttached ()
-		{
-			if (!attaching)
-				throw new NotSupportedException ($"{nameof(PlatformSegue)} cannot be added as an Effect");
-			attaching = false;
-
-			NativeSource =
-				#if __IOS__
-				// FIXME: kludge
-				(NativePage)Container.NextResponder;
-				#else
-				Container;
-				#endif
-		}
-
-		void Detach ()
-		{
-			if (IsAttached)
-				Element.Effects.Remove (this);
-		}
-		protected override void OnDetached ()
-		{
-			NativeSource = null;
-			attaching = false;
 		}
 
 		NativePage GetDestinationForPop ()
@@ -78,18 +33,8 @@ namespace Xamarin.Forms.Segues {
 			#error Unknown platform
 			#endif
 
-		internal static bool IsNativePage (object obj)
-			=> obj is NativePage;
-
-		static NativePage ConvertToNative (Page page)
-		{
-			return
-			#if __IOS__
-				page?.CreateViewController ();
-			#else
-			#error Unknown platform
-			#endif
-		}
+		internal static bool IsNativePage (object obj) => obj is NativePage;
+		internal static bool IsNativePage (Type ty) => typeof (NativePage).IsAssignableFrom (ty);
 
 		#region ICommand
 
@@ -106,25 +51,19 @@ namespace Xamarin.Forms.Segues {
 		///  with the given destination.
 		/// </summary>
 		/// <remarks>
-		/// Subclasses that override this method should call
-		///  <see cref="RaiseCanExecuteChanged"/> as appropriate.
-		/// </remarks>
-		public virtual bool CanExecute (NativePage destination)
-			=> destination != null || Action == SegueAction.Pop;
-
-		/// <summary>
-		/// Returns a value indicating if this <see cref="PlatformSegue"/> can be executed
-		///  with the given destination.
-		/// </summary>
 		/// <remarks>
-		/// The base method converts the given <see cref="Page"/> into a native type and
-		///  calls the native overload of this method.
-		/// <para/>
-		/// Subclasses that override this method should call
-		///  <see cref="RaiseCanExecuteChanged"/> as appropriate.
+		/// This method calls <see cref="CanExecute(Type)"/> with the <see cref="Type"/>
+		///   of the passed destination.
 		/// </remarks>
-		public virtual bool CanExecute (Page destination)
-			=> CanExecute (ConvertToNative (destination));
+		public bool CanExecute (NativePage destination)
+			// Can call CanExecuteOverride directly since we know it derives from NativePage
+			=> CanExecuteOverride (destination.GetType());
+
+		// This modifies the behavior of CanExecute(Type) to allow types that derive from NativePage
+		//  to be passed along to CanExecuteOverride.
+		internal override bool CanExecuteInternal (Type ty)
+			=> (IsNativePage (ty) || typeof (Page).IsAssignableFrom (ty))
+			&& CanExecuteOverride (ty);
 
 		/// <summary>
 		/// Executes this <see cref="PlatformSegue"/> with the specified native destination.
@@ -139,7 +78,9 @@ namespace Xamarin.Forms.Segues {
 		/// </remarks>
 		protected virtual Task ExecuteAsync (NativePage destination)
 		{
-			var animated = !IsCustomSegue;
+			// Animate the default segue type, but allow subclasses to define
+			//  their own animations..
+			var animated = !IsSubclass;
 			switch (Action) {
 
 				case SegueAction.Push: {
@@ -202,9 +143,6 @@ namespace Xamarin.Forms.Segues {
 		/// <summary>
 		/// Executes this <see cref="PlatformSegue"/> with the specified <see cref="Page"/> destination.
 		/// </summary>
-		/// <param name="destination">
-		///  Destination <see cref="Page"/>. May be <c>null</c> in the case of <see cref="SegueAction.Pop"/>.
-		/// </param>
 		/// <remarks>
 		/// The base implementation converts the page to the native type and calls
 		///  <see cref="ExecuteAsync(NativePage)"/>. Override this method to provide special handling
@@ -214,90 +152,93 @@ namespace Xamarin.Forms.Segues {
 		///  destinations. Call <c>base.ExecuteAsync</c> to effect the appropriate change to the
 		///  navigation stack.
 		/// </remarks>
-		protected virtual Task ExecuteAsync (Page destination)
-			=> ExecuteNative (ConvertToNative (destination));
+		protected override Task ExecuteAsync (Page destination)
+			=> ExecuteNative (GetOrCreateRenderer (destination));
 
-		internal async Task ExecuteInternal (VisualElement sourceElement, object destination)
+		internal override async Task ExecuteInternal (object destination)
 		{
-			var originalSource = sourceElem;
-			sourceElem = sourceElement;
-			try {
-				Attach ();
-
-				// Ensure that the destination is passed for Pop.
-				//  Our built-in seg doesn't care, but subclasses might.
-				if (Action == SegueAction.Pop && IsCustomSegue)
-					destination = GetDestinationForPop ();
-
-				if (destination == null) {
-					await ExecuteAsync ((Page)null);
-				} else {
-					switch (destination) {
-
-					case Page page: await ExecuteAsync (page); break;
-					case NativePage native: await ExecuteNative (native); break;
-					default: throw new ArgumentException ();
-					}
-				}
-			} finally {
-				sourceElem = originalSource;
-				Detach ();
+			if (NativeSource == null) {
+				if (SourcePage == null)
+					throw new InvalidOperationException ("Source element must be on a Page");
+				NativeSource = GetOrCreateRenderer (SourcePage);
 			}
-		}
-
-		public Task ExecuteAsync (VisualElement sourceElement, NativePage destination)
-		{
-			if (sourceElement == null)
-				throw new ArgumentNullException (nameof (sourceElement));
-			return ExecuteInternal (sourceElement, destination);
-		}
-
-		public Task ExecuteAsync (VisualElement sourceElement, Page destination) {
-			if (sourceElement == null)
-				throw new ArgumentNullException (nameof (sourceElement));
-			return ExecuteInternal (sourceElement, destination);
-		}
-
-		public async Task ExecuteAsync (NativePage nativeSource, Page destination)
-		{
-			if (nativeSource == null)
-				throw new ArgumentNullException (nameof (nativeSource));
-
-			NativeSource = nativeSource;
 			try {
-				await ExecuteInternal (null, destination);
+				if (Action == SegueAction.Pop) {
+					// Before we can call ExecuteAsync, we must ensure that the destination is
+					//  passed for Pop for subclasses (built-in segs don't care)
+					if (IsSubclass)
+						destination = GetDestinationForPop ();
+					// Clear out our previous page on the source page to prevent stale data
+					SourcePage?.SetPreviousPage (null);
+				} else if (destination == null) {
+					throw new ArgumentNullException (nameof (destination), $"May only be null for {nameof (SegueAction.Pop)}");
+				} else if (destination is Page page) {
+					page.SetPreviousPage (SourcePage);
+				}
+	
+				switch (destination) {
+	
+				case Page page: await ExecuteAsync (page); break;
+				case NativePage native: await ExecuteNative (native); break;
+				default: throw new ArgumentException ();
+				}
 			} finally {
 				NativeSource = null;
 			}
 		}
 
-		bool ICommand.CanExecute (object parameter)
+		/// <summary>
+		/// Executes this <see cref="Segue"/> with the specified source and destination.
+		/// </summary>
+		public Task ExecuteAsync (VisualElement sourceElement, NativePage destination)
 		{
-			if (parameter == null)
-				return CanExecute ((Page)null);
-
-			switch (parameter) {
-
-			// FIXME: Ideally, we could know the type created by the template w/o instantiating it
-			//  (we can't instantiate it here)
-			case DataTemplate _: return true;
-			case Page page: return CanExecute (page);
-			case NativePage native: return CanExecute (native);
-			}
-			return false;
+			if (sourceElement == null)
+				throw new ArgumentNullException (nameof (sourceElement));
+			SourceElement = sourceElement;
+			return ExecuteInternal (destination);
 		}
-		async void ICommand.Execute (object parameter)
+
+		/// <summary>
+		/// Executes this <see cref="Segue"/> with the specified source and destination.
+		/// </summary>
+		/// <param name="destination">
+		///  Destination <see cref="Page"/>. Should be omitted (<c>null</c>) if and only if
+		///   <see cref="Segue.Action"/> is set to <see cref="SegueAction.Pop"/>.
+		/// </param>
+		public Task ExecuteAsync (NativePage nativeSource, Page destination = null)
 		{
-			if (sourceElem == null)
-				throw new InvalidOperationException ("SourceElement property must be set before segue is executed");
+			if (nativeSource == null)
+				throw new ArgumentNullException (nameof (nativeSource));
+			NativeSource = nativeSource;
+			return ExecuteInternal (destination);
+		}
 
-			if (parameter is DataTemplate template)
-				parameter = template.CreateContent ();
-
-			await ExecuteInternal (sourceElem, parameter);
+		/// <summary>
+		/// Executes this <see cref="Segue"/> with the specified source and destination.
+		/// </summary>
+		public Task ExecuteAsync (NativePage nativeSource, NativePage nativeDestination)
+		{
+			if (nativeSource == null)
+				throw new ArgumentNullException (nameof (nativeSource));
+			NativeSource = nativeSource;
+			return ExecuteInternal (nativeDestination);
 		}
 
 		#endregion
+
+		static NativePage GetOrCreateRenderer (Page page)
+		{
+			var renderer = Platform.GetRenderer (page);
+			if (renderer == null) {
+				renderer = Platform.CreateRenderer (page);
+				Platform.SetRenderer (page, renderer);
+			}
+			return renderer
+			#if __IOS__
+				.ViewController
+			#endif
+			;
+		}
 	}
 }
-#endif
+#endif // !NETSTANDARD2_0

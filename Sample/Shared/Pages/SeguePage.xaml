@@ -10,24 +10,30 @@
 		<local:SegueModel />
 	</ContentPage.BindingContext>
 	<StackLayout Orientation="Vertical" Spacing="0">
+
+		<!-- You specify segue destination using CommandParameter.
+		  The simplest is to use a Type... -->
 		<Button
-			Text="Push to native screen (iOS only)"
-			Command="{s:Segue Push}">
-			<Button.CommandParameter>
-				<DataTemplate>
-					<local:NativeSegueDest/>
-				</DataTemplate>
-			</Button.CommandParameter>
-		</Button>
+			Text="Push to native (iOS only)"
+			Command="{s:Segue Push}"
+			CommandParameter="{x:Type local:NativeSegueDest}" />
 		<Button
-			Text="Push to native screen with custom segue (iOS only)"
+			Text="Push to native with custom native seg (iOS only)"
+			Command="{s:Segue Push, Type=Gate}"
+			CommandParameter="{x:Type local:NativeSegueDest}" />
+
+		<!-- ...but if you want to configure properties on the destination,
+		  use a DataTemplate... -->
+		<Button
+			Text="Push to Page with custom native seg (iOS only)"
 			Command="{s:Segue Push, Type=Gate}">
 			<Button.CommandParameter>
 				<DataTemplate>
-					<local:NativeSegueDest/>
+					<local:SegueDestPage BindingContext="{Binding}" />
 				</DataTemplate>
 			</Button.CommandParameter>
 		</Button>
+
 		<Label Text=" Segue to a Forms Page" BackgroundColor="LightGray" />
 		<ListView SelectedItem="{Binding Action, Mode=TwoWay}">
 			<ListView.ItemsSource>

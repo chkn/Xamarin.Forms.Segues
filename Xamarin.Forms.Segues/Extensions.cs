@@ -7,6 +7,15 @@ namespace Xamarin.Forms.Segues {
 
 	static class Extensions {
 
+		static readonly BindableProperty PreviousPageProperty
+			= BindableProperty.CreateAttached ("PreviousPage", typeof (Page), typeof (Extensions), null);
+
+		public static Page GetPreviousPage (this Page page)
+			=> (Page)page.GetValue (PreviousPageProperty);
+
+		public static void SetPreviousPage (this Page page, Page previous)
+			=> page.SetValue (PreviousPageProperty, previous);
+
 		public static bool IsTop (this IReadOnlyList<Page> stack, Page page)
 		{
 			var cnt = stack.Count;

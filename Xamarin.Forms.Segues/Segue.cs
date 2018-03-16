@@ -40,6 +40,7 @@ namespace Xamarin.Forms.Segues {
 		/// </remarks>
 		public Page SourcePage {
 			get {
+				// FIXME: Do we need to listen for sourceElem's parent to change to invalidate this?
 				if (sourcePage == null)
 					sourcePage = sourceElem.GetPage ();
 				return sourcePage;
@@ -47,11 +48,20 @@ namespace Xamarin.Forms.Segues {
 		}
 		Page sourcePage;
 
-		bool IsCustomSegue => GetType () != typeof (Segue);
+		bool IsSubclass => GetType () != typeof (Segue);
 
 		// FIXME: Make this work for modal
 		Page GetDestinationForPop ()
-			=> SourceElement.Navigation.NavigationStack.GetNextIfTop (SourcePage);
+		{
+			var nav = SourceElement.Navigation;
+			return nav.ModalStack.GetNextIfTop (sourcePage)
+			    ?? nav.NavigationStack.GetNextIfTop (SourcePage)
+			    // Sometimes the above may not give us back the page, if for instance it's a modal,
+			    //  so also check for our attached property..
+			    ?? SourcePage.GetPreviousPage ()
+			    // Otherwise, fall back to MainPage (FIXME)
+			    ?? Application.Current.MainPage;
+		}
 
 		// Prevents link out
 		public static void Init ()
@@ -70,23 +80,31 @@ namespace Xamarin.Forms.Segues {
 
 		/// <summary>
 		/// Returns a value indicating if this <see cref="Segue"/> can be executed
-		///  with the given destination <see cref="Page"/>.
+		///  with the given <see cref="Type"/> of destination.
 		/// </summary>
+		/// <remarks>
+		/// This method calls <see cref="CanExecuteOverride(Type)"/> after ensuring
+		///  the given <see cref="Type"/> derives from the proper base type.
+		/// </remarks>
+		public bool CanExecute (Type destinationType) => CanExecuteInternal (destinationType);
+
+		internal virtual bool CanExecuteInternal (Type ty)
+			=> typeof (Page).IsAssignableFrom (ty)
+			&& CanExecuteOverride (ty);
+
+		/// <summary>
+		/// Returns a value indicating if this <see cref="Segue"/> can be executed
+		///  with the given <see cref="Type"/> of destination.
 		/// <remarks>
 		/// Subclasses that override this method should call
 		///  <see cref="RaiseCanExecuteChanged"/> as appropriate.
 		/// </remarks>
-		public virtual bool CanExecute (Page destination)
-			=> destination != null || Action == SegueAction.Pop;
+		protected virtual bool CanExecuteOverride (Type destinationType)
+			=> true;
 
 		/// <summary>
 		/// Executes this <see cref="Segue"/> with the specified destination.
 		/// </summary>
-		/// <param name="destination">
-		///  Destination <see cref="Page"/>. May be <c>null</c> in the case of
-		///   <see cref="SegueAction.Pop"/> when the <see cref="SourcePage"/>
-		///   was not pushed.
-		/// </param>
 		/// <remarks>
 		/// Subclasses should override this method to perform any custom animation.
 		///  Call <c>base.ExecuteAsync</c> to effect the appropriate change to the
@@ -94,7 +112,9 @@ namespace Xamarin.Forms.Segues {
 		/// </remarks>
 		protected virtual Task ExecuteAsync (Page destination)
 		{
-			var animated = !IsCustomSegue;
+			// Animate the default segue type, but allow subclasses to define
+			//  their own animations..
+			var animated = !IsSubclass;
 			switch (Action) {
 
 				case SegueAction.Push:
@@ -122,17 +142,44 @@ namespace Xamarin.Forms.Segues {
 			throw new NotImplementedException (Action.ToString ());
 		}
 
-		Task ExecuteInternal (Page destination)
+		internal virtual Task ExecuteInternal (object destination)
 		{
-			// Before we can call ExecuteAsync, we must ensure that the destination is
-			//  passed for Pop. Our built-in seg doesn't care, but subclasses might.
-			if (Action == SegueAction.Pop && IsCustomSegue)
-				destination = GetDestinationForPop ();
-
-			return ExecuteAsync (destination);
+			#if !NETSTANDARD2_0
+			// If this is the native object, and this is not a subclass of Segue,
+			//  we will delegate to PlatformSegue
+			if (PlatformSegue.IsNativePage (destination)) {
+				if (IsSubclass)
+					throw new ArgumentException ($"Custom segues must derive from {nameof (PlatformSegue)} to handle native objects");
+				return new PlatformSegue {
+					Action = Action,
+					SourceElement = SourceElement
+				}.ExecuteInternal (destination);
+			}
+			#endif
+			var page = (Page)destination;
+			if (Action == SegueAction.Pop) {
+				// Before we can call ExecuteAsync, we must ensure that the destination is
+				//  passed for Pop for subclasses (built-in segs don't care)
+				if (IsSubclass)
+					page = GetDestinationForPop ();
+				// Clear out our previous page on the source page to prevent stale data
+				SourcePage?.SetPreviousPage (null);
+			} else if (destination == null) {
+				throw new ArgumentNullException (nameof (destination), $"May only be null for {nameof (SegueAction.Pop)}");
+			} else {
+				page.SetPreviousPage (SourcePage);
+			}
+			return ExecuteAsync (page);
 		}
 
-		public async Task ExecuteAsync (VisualElement sourceElement, Page destination)
+		/// <summary>
+		/// Executes this <see cref="Segue"/> with the specified source and destination.
+		/// </summary>
+		/// <param name="destination">
+		///  Destination <see cref="Page"/>. Should be omitted (<c>null</c>) if and only if
+		///   <see cref="Segue.Action"/> is set to <see cref="SegueAction.Pop"/>.
+		/// </param>
+		public async Task ExecuteAsync (VisualElement sourceElement, Page destination = null)
 		{
 			if (sourceElement == null)
 				throw new ArgumentNullException (nameof (sourceElement));
@@ -148,18 +195,24 @@ namespace Xamarin.Forms.Segues {
 
 		bool ICommand.CanExecute (object parameter)
 		{
+			// We do allow parameter to be null for a Pop (we'll determine the destination if we're executed)
+			if (parameter == null)
+				return Action == SegueAction.Pop;
+
 			// FIXME: Ideally, we could know the type created by the template w/o instantiating it
 			//  (we can't instantiate it here)
 			if (parameter is DataTemplate)
 				return true;
 
+			var ty = (parameter as Type) ?? parameter.GetType ();
+
 			#if !NETSTANDARD2_0
 			// If this is the native object, we will delegate to PlatformSegue
-			if (PlatformSegue.IsNativePage (parameter))
-				return !IsCustomSegue;
+			if (!IsSubclass && PlatformSegue.IsNativePage (ty))
+				return true;
 			#endif
 
-			return CanExecute (parameter as Page);
+			return CanExecute (ty);
 		}
 
 		async void ICommand.Execute (object parameter)
@@ -170,20 +223,10 @@ namespace Xamarin.Forms.Segues {
 			if (parameter is DataTemplate template)
 				parameter = template.CreateContent ();
 
-			#if !NETSTANDARD2_0
-			// If this is the native object, we will delegate to PlatformSegue
-			if (PlatformSegue.IsNativePage (parameter)) {
-				if (IsCustomSegue)
-					throw new ArgumentException ("Custom segues must derive from PlatformSegue to handle native objects", nameof(parameter));
+			if (parameter is Type ty)
+				parameter = Activator.CreateInstance (ty);
 
-				var platSeg = new PlatformSegue {
-					Action = Action
-				};
-				await platSeg.ExecuteInternal (SourceElement, parameter);
-				return;
-			}
-			#endif
-			await ExecuteInternal ((Page)parameter);
+			await ExecuteInternal (parameter);
 		}
 
 		#endregion
