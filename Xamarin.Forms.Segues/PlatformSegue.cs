@@ -77,10 +77,12 @@ namespace Xamarin.Forms.Segues {
 		///  navigation stack.
 		/// </remarks>
 		protected virtual Task ExecuteAsync (NativePage destination)
-		{
 			// Animate the default segue type, but allow subclasses to define
 			//  their own animations..
-			var animated = !IsSubclass;
+			=> ExecuteAsync (destination, useDefaultAnimation: !IsSubclass);
+
+		protected Task ExecuteAsync (NativePage destination, bool useDefaultAnimation)
+		{
 			switch (Action) {
 
 				case SegueAction.Push: {
@@ -90,7 +92,7 @@ namespace Xamarin.Forms.Segues {
 							throw new InvalidOperationException ("Cannot Push if source is not contained in NavigationPage or UINavigationController");
 
 						// FIXME: Taskify
-						nav.PushViewController (destination, animated);
+						nav.PushViewController (destination, useDefaultAnimation);
 						return Task.CompletedTask;
 					#else
 					#error Unknown platform
@@ -99,7 +101,7 @@ namespace Xamarin.Forms.Segues {
 
 				case SegueAction.Modal: {
 					#if __IOS__
-						return NativeSource.PresentViewControllerAsync (destination, animated);
+						return NativeSource.PresentViewControllerAsync (destination, useDefaultAnimation);
 					#else
 					#error Unknown platform
 					#endif
@@ -109,14 +111,14 @@ namespace Xamarin.Forms.Segues {
 					#if __IOS__
 						var pres = NativeSource.PresentingViewController;
 						if (pres != null)
-							return pres.DismissViewControllerAsync (animated);
+							return pres.DismissViewControllerAsync (useDefaultAnimation);
 
 						var nav = NativeSource.NavigationController;
 						if (nav == null)
 							throw new InvalidOperationException ("Cannot Pop if source is not pushed or modal");
 
 						// FIXME: Taskify
-						nav.PopViewController (animated);
+						nav.PopViewController (useDefaultAnimation);
 						return Task.CompletedTask;
 					#else
 					#error Unknown platform
@@ -149,8 +151,8 @@ namespace Xamarin.Forms.Segues {
 		///  for <see cref="Page"/> destinations.
 		///
 		/// Subclasses can override this method to perform any custom animation desired for <see cref="Page"/>
-		///  destinations. Call <c>base.ExecuteAsync</c> to effect the appropriate change to the
-		///  navigation stack.
+		///  destinations. Call <c>base.ExecuteAsync</c> or <see cref="ExecuteAsync(Page, bool)"/>
+		///  to effect the appropriate change to the navigation stack.
 		/// </remarks>
 		protected override Task ExecuteAsync (Page destination)
 			=> ExecuteNative (GetOrCreateRenderer (destination));

@@ -21,8 +21,11 @@ namespace Xamarin.Forms.Segues {
 
 		public static readonly BindableProperty SourceElementProperty =
 			BindableProperty.Create (nameof (SourceElement), typeof (VisualElement), typeof (Segue), propertyChanged: (s, _, __) => {
-				// FIXME: Also listen for value's parent to change to invalidate this
-				((Segue)s).sourcePage = null;
+				// FIXME: Also listen for value's parent to change to invalidate this?
+				// FIXME: It could be a different element on the same page
+				var seg = (Segue)s;
+				seg.sourcePage = null;
+				seg.OnPropertyChanged (nameof (SourcePage));
 			});
 
 		public SegueAction Action {
@@ -126,20 +129,22 @@ namespace Xamarin.Forms.Segues {
 		/// </summary>
 		/// <remarks>
 		/// Subclasses should override this method to perform any custom animation.
-		///  Call <c>base.ExecuteAsync</c> to effect the appropriate change to the
-		///  navigation stack.
+		///  Call <c>base.ExecuteAsync</c> or <see cref="ExecuteAsync(Page, bool)"/>
+		///  to effect the appropriate change to the navigation stack.
 		/// </remarks>
 		protected virtual Task ExecuteAsync (Page destination)
-		{
 			// Animate the default segue type, but allow subclasses to define
 			//  their own animations..
-			var animated = !IsSubclass;
+			=> ExecuteAsync (destination, useDefaultAnimation: !IsSubclass);
+
+		protected Task ExecuteAsync (Page destination, bool useDefaultAnimation)
+		{
 			switch (Action) {
 
 				case SegueAction.Push:
-					return SourceElement.Navigation.PushAsync (destination, animated);
+					return SourceElement.Navigation.PushAsync (destination, useDefaultAnimation);
 				case SegueAction.Modal:
-					return SourceElement.Navigation.PushModalAsync (destination, animated);
+					return SourceElement.Navigation.PushModalAsync (destination, useDefaultAnimation);
 
 				case SegueAction.Pop: {
 						var srcPage = SourcePage;
@@ -147,9 +152,9 @@ namespace Xamarin.Forms.Segues {
 							throw new InvalidOperationException ($"{nameof (SourceElement)} must be on a Page");
 						var nav = srcPage.Navigation;
 						if (nav.ModalStack.IsTop (srcPage))
-							return nav.PopModalAsync (animated);
+							return nav.PopModalAsync (useDefaultAnimation);
 						if (nav.NavigationStack.IsTop (srcPage))
-							return nav.PopAsync (animated);
+							return nav.PopAsync (useDefaultAnimation);
 						nav.RemovePage (srcPage);
 						return Task.CompletedTask;
 					}

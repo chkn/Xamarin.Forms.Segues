@@ -12,6 +12,7 @@ namespace Sample {
 			Segue.RegisterType<DownUpSegue> ("DownUp");
 			Segue.RegisterType<FadeInOutSegue> ("Fade");
 			Segue.RegisterType<FlipSegue> ("Flip");
+			Segue.RegisterType<SpinnerSegue> ("Spinner");
 
 			InitializeComponent ();
 		}

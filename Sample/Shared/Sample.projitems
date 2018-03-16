@@ -33,6 +33,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Custom Segues\FadeInOutSegue.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Custom Segues\FlipSegue.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Custom Segues\SpinnerSegue.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Custom Segues\" />
