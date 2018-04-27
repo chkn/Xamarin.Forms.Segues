@@ -6,6 +6,13 @@ A library that provides support for segues between Pages.
 
 Xamarin.Forms provides navigation through the `INavigation` interface. Xamarin.Forms.Segues wraps [many navigation actions](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Xamarin.Forms.Segues/SegueAction.cs) from `INavigation`, exposing them through the `Segue` class. Becuase `Segue` implements `ICommand`, segues can simply be assigned to anything that has a `Command` property, reducing codebehind.
 
+## NuGet
+* [Xamarin.Forms.Segues](http://www.nuget.org/packages/Xamarin.Forms.Segues) [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.Seguess.svg?label=NuGet)](https://www.nuget.org/packages/Xamarin.Forms.Segues)
+
+## Build: 
+* ![Build status](https://jamesmontemagno.visualstudio.com/_apis/public/build/definitions/6b79a378-ddd6-4e31-98ac-a12fcd68644c/21/badge)
+* CI NuGet Feed: http://myget.org/F/xamarin-plugins
+
 ### Segue from XAML
 
 Simply add this xmlns to the root element of your XAML:
