@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;netstandard1.0;Xamarin.iOS10</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;Xamarin.iOS10</TargetFrameworks>
     <AssemblyName>Xamarin.Forms.Segues</AssemblyName>
     <RootNamespace>Xamarin.Forms.Segues</RootNamespace>
     <Product>$(AssemblyName) ($(TargetFramework))</Product>
@@ -11,10 +11,10 @@
     <Authors>Alex Corrado</Authors>
     <PackageId>Xamarin.Forms.Segues</PackageId>
     <PackOnBuild>true</PackOnBuild>
-    <PackageIconUrl>https://raw.githubusercontent.com/jamesmontemagno/SettingsPlugin/master/art/icon.png</PackageIconUrl>
-    <PackageLicenseUrl>https://github.com/jamesmontemagno/SettingsPlugin/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/jamesmontemagno/Xamarin-Templates/master/Templates/icons/plugin_icon_nuget.png</PackageIconUrl>
+    <PackageLicenseUrl>https://github.com/chkn/Xamarin.Forms.Segues</PackageLicenseUrl>
     <Owners>JamesMontemagno,chkn</Owners>
-    <PackageProjectUrl>https://github.com/jamesmontemagno/SettingsPlugin</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/chkn/Xamarin.Forms.Segues</PackageProjectUrl>
     <Summary>Beautiful Segues for Xamarin.Forms apps.</Summary>
     <PackageTags>xamarin, xamarin.forms, animations, segues</PackageTags>
     <Title>Segues for Xamarin.Forms</Title>
