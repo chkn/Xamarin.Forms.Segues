@@ -13,11 +13,9 @@ namespace Xamarin.Forms.Segues {
 	#endif
 
 	// FIXME: This needs to be better integrated into each platform impl.
-	public class PlatformSegue : Segue {
+	internal sealed class PlatformSegue : Segue {
 
 		protected NativePage NativeSource { get; private set; }
-
-		bool IsSubclass => GetType () != typeof (PlatformSegue);
 
 		protected internal PlatformSegue ()
 		{
@@ -38,50 +36,7 @@ namespace Xamarin.Forms.Segues {
 
 		#region ICommand
 
-		public event EventHandler CanExecuteChanged;
-
-		/// <summary>
-		/// Called by subclasses to raise the <see cref="CanExecuteChanged"/> event. 
-		/// </summary>
-		protected void RaiseCanExecuteChanged ()
-			=> CanExecuteChanged?.Invoke (this, EventArgs.Empty);
-
-		/// <summary>
-		/// Returns a value indicating if this <see cref="PlatformSegue"/> can be executed
-		///  with the given destination.
-		/// </summary>
-		/// <remarks>
-		/// <remarks>
-		/// This method calls <see cref="CanExecute(Type)"/> with the <see cref="Type"/>
-		///   of the passed destination.
-		/// </remarks>
-		public bool CanExecute (NativePage destination)
-			// Can call CanExecuteOverride directly since we know it derives from NativePage
-			=> CanExecuteOverride (destination.GetType());
-
-		// This modifies the behavior of CanExecute(Type) to allow types that derive from NativePage
-		//  to be passed along to CanExecuteOverride.
-		internal override bool CanExecuteInternal (Type ty)
-			=> (IsNativePage (ty) || typeof (Page).IsAssignableFrom (ty))
-			&& CanExecuteOverride (ty);
-
-		/// <summary>
-		/// Executes this <see cref="PlatformSegue"/> with the specified native destination.
-		/// </summary>
-		/// <param name="destination">
-		///  Destination. May be <c>null</c> in the case of <see cref="NavigationAction.Pop"/>.
-		/// </param>
-		/// <remarks>
-		/// Subclasses should override this method to perform any custom animation.
-		///  Call <c>base.ExecuteAsync</c> to effect the appropriate change to the
-		///  navigation stack.
-		/// </remarks>
-		protected virtual Task ExecuteAsync (NativePage destination)
-			// Animate the default segue type, but allow subclasses to define
-			//  their own animations..
-			=> ExecuteAsync (destination, useDefaultAnimation: !IsSubclass);
-
-		protected Task ExecuteAsync (NativePage destination, bool useDefaultAnimation)
+		protected Task ExecuteAsync (NativePage destination)
 		{
 			switch (Action) {
 
@@ -92,7 +47,7 @@ namespace Xamarin.Forms.Segues {
 							throw new InvalidOperationException ("Cannot Push if source is not contained in NavigationPage or UINavigationController");
 
 						// FIXME: Taskify
-						nav.PushViewController (destination, useDefaultAnimation);
+						nav.PushViewController (destination, true);
 						return Task.CompletedTask;
 					#else
 					#error Unknown platform
@@ -101,7 +56,7 @@ namespace Xamarin.Forms.Segues {
 
 				case NavigationAction.Modal: {
 					#if __IOS__
-						return NativeSource.PresentViewControllerAsync (destination, useDefaultAnimation);
+						return NativeSource.PresentViewControllerAsync (destination, true);
 					#else
 					#error Unknown platform
 					#endif
@@ -111,14 +66,14 @@ namespace Xamarin.Forms.Segues {
 					#if __IOS__
 						var pres = NativeSource.PresentingViewController;
 						if (pres != null)
-							return pres.DismissViewControllerAsync (useDefaultAnimation);
+							return pres.DismissViewControllerAsync (true);
 
 						var nav = NativeSource.NavigationController;
 						if (nav == null)
 							throw new InvalidOperationException ("Cannot Pop if source is not pushed or modal");
 
 						// FIXME: Taskify
-						nav.PopViewController (useDefaultAnimation);
+						nav.PopViewController (true);
 						return Task.CompletedTask;
 					#else
 					#error Unknown platform
@@ -166,10 +121,6 @@ namespace Xamarin.Forms.Segues {
 			}
 			try {
 				if (Action == NavigationAction.Pop) {
-					// Before we can call ExecuteAsync, we must ensure that the destination is
-					//  passed for Pop for subclasses (built-in segs don't care)
-					if (IsSubclass)
-						destination = GetDestinationForPop ();
 					// Clear out our previous page on the source page to prevent stale data
 					SourcePage?.SetPreviousPage (null);
 				} else if (destination == null) {
@@ -187,43 +138,6 @@ namespace Xamarin.Forms.Segues {
 			} finally {
 				NativeSource = null;
 			}
-		}
-
-		/// <summary>
-		/// Executes this <see cref="Segue"/> with the specified source and destination.
-		/// </summary>
-		public Task ExecuteAsync (VisualElement sourceElement, NativePage destination)
-		{
-			if (sourceElement == null)
-				throw new ArgumentNullException (nameof (sourceElement));
-			SourceElement = sourceElement;
-			return ExecuteInternal (destination);
-		}
-
-		/// <summary>
-		/// Executes this <see cref="Segue"/> with the specified source and destination.
-		/// </summary>
-		/// <param name="destination">
-		///  Destination <see cref="Page"/>. Should be omitted (<c>null</c>) if and only if
-		///   <see cref="Segue.Action"/> is set to <see cref="NavigationAction.Pop"/>.
-		/// </param>
-		public Task ExecuteAsync (NativePage nativeSource, Page destination = null)
-		{
-			if (nativeSource == null)
-				throw new ArgumentNullException (nameof (nativeSource));
-			NativeSource = nativeSource;
-			return ExecuteInternal (destination);
-		}
-
-		/// <summary>
-		/// Executes this <see cref="Segue"/> with the specified source and destination.
-		/// </summary>
-		public Task ExecuteAsync (NativePage nativeSource, NativePage nativeDestination)
-		{
-			if (nativeSource == null)
-				throw new ArgumentNullException (nameof (nativeSource));
-			NativeSource = nativeSource;
-			return ExecuteInternal (nativeDestination);
 		}
 
 		#endregion

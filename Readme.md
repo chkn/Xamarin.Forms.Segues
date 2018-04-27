@@ -92,10 +92,6 @@ public class MyCustomSegue : Segue {
 
 ### Platform Segues
 
-The `PlatformSegue` class (currently only implemented for iOS) integrates with the low-level platform and makes it possible to segue to and from Forms `Page`s and native screens (such as `UIViewController`s on iOS). This class is used automatically when necessary for built-in segues, but you can also subclass it to create a platform-specific custom segue.
+The `PlatformSegue` class (currently only implemented for iOS) integrates with the low-level platform and makes it possible to segue to and from Forms `Page`s and native screens (such as `UIViewController`s on iOS). This class is used automatically when necessary.
 
-[Example of custom platform segue for iOS](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Sample/iOS/GateSegue.cs)
-
-[Example of seguing from Page to UIViewController in XAML](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Sample/Shared/Pages/SeguePage.xaml#L14-L35)
-
-[Example of seguing back from UIViewController in code](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Sample/iOS/NativeSegueDest.cs#L15)
+[Example of seguing from Page to UIViewController in XAML](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Sample/Shared/Pages/SeguePage.xaml#L14-L19)

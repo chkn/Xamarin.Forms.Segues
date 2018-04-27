@@ -18,10 +18,6 @@ namespace Sample.Mac {
 			Segue.Init ();
 			Xamarin.Forms.Forms.Init ();
 
-			// Register our native segue types
-			// FIXME: Gate is not implemented for Mac, so just use default segue type
-			Segue.RegisterType<Segue> ("Gate");
-
 			// Start the app
 			window = new NSWindow (
 				new CGRect (0, 0, 400, 600),

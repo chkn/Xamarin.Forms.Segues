@@ -23,8 +23,5 @@
 		<Button
 			Text="Pop with Flip"
 			Command="{s:Segue Pop, Type=Flip}" />
-		<Button
-			Text="Pop with Gate"
-			Command="{s:Segue Pop, Type=Gate}" />
 	</StackLayout>
 </ContentPage>

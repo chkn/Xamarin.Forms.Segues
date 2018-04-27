@@ -24,10 +24,6 @@ namespace Sample.Droid {
 			Segue.Init ();
 			global::Xamarin.Forms.Forms.Init (this, bundle);
 
-			// Register our native segue types
-			// FIXME: Gate is not implemented for Android, so just use default segue type
-			Segue.RegisterType<Segue> ("Gate");
-
 			LoadApplication (new App ());
 		}
 	}

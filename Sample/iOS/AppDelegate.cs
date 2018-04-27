@@ -16,9 +16,6 @@ namespace Sample.iOS {
 			Segue.Init ();
 			global::Xamarin.Forms.Forms.Init ();
 
-			// Register our native segue types
-			Segue.RegisterType<GateSegue> ("Gate");
-
 			LoadApplication (new Sample.App ());
 
 			return base.FinishedLaunching (app, options);

@@ -95,12 +95,8 @@ namespace Xamarin.Forms.Segues {
 		///  the given <see cref="Type"/> derives from the proper base type.
 		/// </remarks>
 		public bool CanExecute (Type destinationType)
-			=> CanExecuteInternal (destinationType);
-
-		// We need this to allow PlatformSegue to ammend the allowed types.
-		internal virtual bool CanExecuteInternal (Type ty)
-			=> typeof (Page).IsAssignableFrom (ty)
-			&& CanExecuteOverride (ty);
+			=> typeof (Page).IsAssignableFrom (destinationType)
+			&& CanExecuteOverride (destinationType);
 
 		/// <summary>
 		/// Returns a value indicating if this <see cref="Segue"/> can be executed
@@ -173,7 +169,7 @@ namespace Xamarin.Forms.Segues {
 			//  we will delegate to PlatformSegue
 			if (PlatformSegue.IsNativePage (destination)) {
 				if (IsSubclass)
-					throw new ArgumentException ($"Custom segues must derive from {nameof (PlatformSegue)} to handle native objects");
+					throw new ArgumentException ($"Custom segues cannot handle native objects");
 				return new PlatformSegue {
 					Action = Action,
 					SourceElement = SourceElement

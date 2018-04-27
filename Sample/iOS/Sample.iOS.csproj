@@ -117,7 +117,6 @@
     <Compile Include="NativeSegueDest.designer.cs">
       <DependentUpon>NativeSegueDest.cs</DependentUpon>
     </Compile>
-    <Compile Include="GateSegue.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="2.5.1.444934" />
