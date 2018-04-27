@@ -1,25 +1,57 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;xamarinios10</TargetFrameworks>
-	</PropertyGroup>
+		<TargetFrameworks>netstandard2.0;Xamarin.iOS10</TargetFrameworks>
+    <AssemblyName>Xamarin.Forms.Segues</AssemblyName>
+    <RootNamespace>Xamarin.Forms.Segues</RootNamespace>
+    <Product>$(AssemblyName) ($(TargetFramework))</Product>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <AssemblyFileVersion>1.0.0.0</AssemblyFileVersion>
+    <Version>1.0.0.0</Version>
+    <Authors>Alex Corrado</Authors>
+    <PackageId>Xamarin.Forms.Segues</PackageId>
+    <PackOnBuild>true</PackOnBuild>
+    <PackageIconUrl>https://raw.githubusercontent.com/jamesmontemagno/Xamarin-Templates/master/Templates/icons/plugin_icon_nuget.png</PackageIconUrl>
+    <PackageLicenseUrl>https://github.com/chkn/Xamarin.Forms.Segues</PackageLicenseUrl>
+    <Owners>JamesMontemagno,chkn</Owners>
+    <PackageProjectUrl>https://github.com/chkn/Xamarin.Forms.Segues</PackageProjectUrl>
+    <Summary>Beautiful Segues for Xamarin.Forms apps.</Summary>
+    <PackageTags>xamarin, xamarin.forms, animations, segues</PackageTags>
+    <Title>Segues for Xamarin.Forms</Title>
+    <Description>
+      Beautiful Segues for Xamarin.Forms apps.
+    </Description>
+    <Copyright>Copyright 2018</Copyright>
+    <RepositoryUrl>https://github.com/chkn/Xamarin.Forms.Segues</RepositoryUrl>
+    <PackageReleaseNotes>See: https://github.com/chkn/Xamarin.Forms.Segues </PackageReleaseNotes>
 
-	<PropertyGroup Condition="'$(TargetFramework)' == 'xamarinios10'">
-		<TargetFrameworkIdentifier>Xamarin.iOS</TargetFrameworkIdentifier>
-		<TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
+    <NeutralLanguage>en</NeutralLanguage>
+    <LangVersion>default</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 
-		<!-- FIXME: Sort this out -->
-		<LanguageTargets Condition="Exists('$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets')">$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets</LanguageTargets>
-		<LanguageTargets Condition="!Exists('$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets')">/Library/Frameworks/Xamarin.iOS.framework/Versions/Current/lib/msbuild/iOS/Xamarin.iOS.CSharp.targets</LanguageTargets>
-	</PropertyGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'xamarinios10'">
-		<Reference Include="System" />
-		<Reference Include="System.Xml" />
-		<Reference Include="System.Core" />
-		<Reference Include="Xamarin.iOS" />
-	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Xamarin.Forms" Version="2.5.0.280555" />
-	</ItemGroup>
+    <GenerateDocumentationFile Condition=" '$(Configuration)' == 'Release' ">true</GenerateDocumentationFile>
+
+    <DefineConstants>$(DefineConstants);</DefineConstants>
+
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition=" '$(Configuration)'=='Debug' ">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)'=='Release' ">
+    <DebugType>pdbonly</DebugType>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.2.0" PrivateAssets="All" />
+    <Compile Include="*.cs" />
+		<PackageReference Include="Xamarin.Forms" Version="2.5.1.444934" />
+  </ItemGroup>
+	
+  
+ <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
+
 </Project>
