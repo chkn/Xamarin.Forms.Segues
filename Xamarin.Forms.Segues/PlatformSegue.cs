@@ -69,7 +69,7 @@ namespace Xamarin.Forms.Segues {
 		/// Executes this <see cref="PlatformSegue"/> with the specified native destination.
 		/// </summary>
 		/// <param name="destination">
-		///  Destination. May be <c>null</c> in the case of <see cref="SegueAction.Pop"/>.
+		///  Destination. May be <c>null</c> in the case of <see cref="NavigationAction.Pop"/>.
 		/// </param>
 		/// <remarks>
 		/// Subclasses should override this method to perform any custom animation.
@@ -85,7 +85,7 @@ namespace Xamarin.Forms.Segues {
 		{
 			switch (Action) {
 
-				case SegueAction.Push: {
+				case NavigationAction.Push: {
 					#if __IOS__
 						var nav = NativeSource.NavigationController;
 						if (nav == null)
@@ -99,7 +99,7 @@ namespace Xamarin.Forms.Segues {
 					#endif
 				}
 
-				case SegueAction.Modal: {
+				case NavigationAction.Modal: {
 					#if __IOS__
 						return NativeSource.PresentViewControllerAsync (destination, useDefaultAnimation);
 					#else
@@ -107,7 +107,7 @@ namespace Xamarin.Forms.Segues {
 					#endif
 				}
 
-				case SegueAction.Pop: {
+				case NavigationAction.Pop: {
 					#if __IOS__
 						var pres = NativeSource.PresentingViewController;
 						if (pres != null)
@@ -125,7 +125,7 @@ namespace Xamarin.Forms.Segues {
 					#endif
 				}
 
-				//case SegueAction.MainPage:
+				//case NavigationAction.MainPage:
 			}
 			throw new NotImplementedException (Action.ToString ());
 		}
@@ -165,7 +165,7 @@ namespace Xamarin.Forms.Segues {
 				NativeSource = GetOrCreateRenderer (SourcePage);
 			}
 			try {
-				if (Action == SegueAction.Pop) {
+				if (Action == NavigationAction.Pop) {
 					// Before we can call ExecuteAsync, we must ensure that the destination is
 					//  passed for Pop for subclasses (built-in segs don't care)
 					if (IsSubclass)
@@ -173,7 +173,7 @@ namespace Xamarin.Forms.Segues {
 					// Clear out our previous page on the source page to prevent stale data
 					SourcePage?.SetPreviousPage (null);
 				} else if (destination == null) {
-					throw new ArgumentNullException (nameof (destination), $"May only be null for {nameof (SegueAction.Pop)}");
+					throw new ArgumentNullException (nameof (destination), $"May only be null for {nameof (NavigationAction.Pop)}");
 				} else if (destination is Page page) {
 					page.SetPreviousPage (SourcePage);
 				}
@@ -205,7 +205,7 @@ namespace Xamarin.Forms.Segues {
 		/// </summary>
 		/// <param name="destination">
 		///  Destination <see cref="Page"/>. Should be omitted (<c>null</c>) if and only if
-		///   <see cref="Segue.Action"/> is set to <see cref="SegueAction.Pop"/>.
+		///   <see cref="Segue.Action"/> is set to <see cref="NavigationAction.Pop"/>.
 		/// </param>
 		public Task ExecuteAsync (NativePage nativeSource, Page destination = null)
 		{

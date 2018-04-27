@@ -15,7 +15,7 @@ namespace Sample {
 			// Here's an example of using a PlatformSegue from code to segue
 			//  from a native iOS UIViewController to a Forms Page:
 			var seg = new GateSegue {
-				Action = SegueAction.Pop
+				Action = NavigationAction.Pop
 			};
 
 			// Execute the segue. Destination argument can be omitted because this is a Pop.

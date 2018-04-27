@@ -15,7 +15,7 @@ namespace Xamarin.Forms.Segues {
 		/// Gets or sets the action that this segue will perform.
 		/// </summary>
 		/// <remarks>
-		/// Values should correspond to values of the <see cref="SegueAction"/> enumeration. 
+		/// Values should correspond to values of the <see cref="NavigationAction"/> enumeration. 
 		/// </remarks>
 		public string Action { get; set; }
 
@@ -41,8 +41,8 @@ namespace Xamarin.Forms.Segues {
 				XamlError ($"Unknown segue type \"{Type}\"", serviceProvider);
 
 			if (Action != null) {
-				SegueAction action;
-				if (!SegueActionConverter.TryParse (Action, out action))
+				NavigationAction action;
+				if (!NavigationActionConverter.TryParse (Action, out action))
 					XamlError ($"Unknown segue action \"{Action}\"", serviceProvider);
 				segue.Action = action;
 			}

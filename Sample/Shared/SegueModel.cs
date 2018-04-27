@@ -9,13 +9,13 @@ namespace Sample {
 	public class SegueModel : BindableObject {
 
 		public static readonly BindableProperty ActionProperty =
-			BindableProperty.Create (nameof (Action), typeof (SegueAction), typeof (SegueModel), default (SegueAction));
+			BindableProperty.Create (nameof (Action), typeof (NavigationAction), typeof (SegueModel), default (NavigationAction));
 
 		public static readonly BindableProperty TypeProperty =
 			BindableProperty.Create (nameof (Type), typeof (string), typeof (SegueModel), "Default");
 
-		public SegueAction Action {
-			get => (SegueAction)GetValue (ActionProperty);
+		public NavigationAction Action {
+			get => (NavigationAction)GetValue (ActionProperty);
 			set => SetValue (ActionProperty, value);
 		}
 

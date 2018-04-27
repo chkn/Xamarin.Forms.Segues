@@ -4,7 +4,7 @@ A library that provides support for segues between Pages.
 
 ## Segue what?
 
-Xamarin.Forms provides navigation through the `INavigation` interface. Xamarin.Forms.Segues wraps [many navigation actions](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Xamarin.Forms.Segues/SegueAction.cs) from `INavigation`, exposing them through the `Segue` class. Becuase `Segue` implements `ICommand`, segues can simply be assigned to anything that has a `Command` property, reducing codebehind.
+Xamarin.Forms provides navigation through the `INavigation` interface. Xamarin.Forms.Segues wraps [many navigation actions](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Xamarin.Forms.Segues/NavigationAction.cs) from `INavigation`, exposing them through the `Segue` class. Becuase `Segue` implements `ICommand`, segues can simply be assigned to anything that has a `Command` property, reducing codebehind.
 
 ## NuGet
 * [Xamarin.Forms.Segues](http://www.nuget.org/packages/Xamarin.Forms.Segues) [![NuGet](https://img.shields.io/nuget/v/Xamarin.Forms.Seguess.svg?label=NuGet)](https://www.nuget.org/packages/Xamarin.Forms.Segues)
@@ -29,7 +29,7 @@ Then, you can add a segue to anything that has a `Command` property, such as a `
         CommandParameter="{x:Type local:NextPage}" />
 ```
 
-Note that the `{s:Segue}` markup extension creates and configures the `Segue` object. In this example, we specify a `Push` segue, but you could also specify any of the other supported [actions](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Xamarin.Forms.Segues/SegueAction.cs).
+Note that the `{s:Segue}` markup extension creates and configures the `Segue` object. In this example, we specify a `Push` segue, but you could also specify any of the other supported [actions](https://github.com/chkn/Xamarin.Forms.Segues/blob/master/Xamarin.Forms.Segues/NavigationAction.cs).
 
 #### Passing data
 
@@ -54,7 +54,7 @@ Creating and configuring a segue from code is not much harder:
 var segue = new Segue ();
 
 // Optionally, we can override the default segue action (Push) with the one we want
-segue.Action = SegueAction.Modal;
+segue.Action = NavigationAction.Modal;
 
 // Execute the segue, passing the source element that triggered it and the destination Page
 await segue.ExecuteAsync (source, destination);

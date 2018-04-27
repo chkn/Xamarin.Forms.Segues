@@ -15,7 +15,7 @@ namespace Sample {
 
 		protected override Task ExecuteAsync (UIViewController destination)
 		{
-			if (Action != SegueAction.Pop) {
+			if (Action != NavigationAction.Pop) {
 				// Gate open
 				UIView destinationViewSnapshot = GetDestinationViewSnapshot (destination);
 				UIView leftSide = GetSourceViewSnapshot ();

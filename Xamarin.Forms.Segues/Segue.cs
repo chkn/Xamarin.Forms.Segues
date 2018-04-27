@@ -17,7 +17,7 @@ namespace Xamarin.Forms.Segues {
 	public class Segue : BindableObject, ICommand {
 
 		public static readonly BindableProperty ActionProperty =
-			BindableProperty.Create (nameof (Action), typeof (SegueAction), typeof (Segue), default (SegueAction));
+			BindableProperty.Create (nameof (Action), typeof (NavigationAction), typeof (Segue), default (NavigationAction));
 
 		public static readonly BindableProperty SourceElementProperty =
 			BindableProperty.Create (nameof (SourceElement), typeof (VisualElement), typeof (Segue), propertyChanged: (s, _, __) => {
@@ -28,8 +28,8 @@ namespace Xamarin.Forms.Segues {
 				seg.OnPropertyChanged (nameof (SourcePage));
 			});
 
-		public SegueAction Action {
-			get => (SegueAction)GetValue (ActionProperty);
+		public NavigationAction Action {
+			get => (NavigationAction)GetValue (ActionProperty);
 			set => SetValue (ActionProperty, value);
 		}
 
@@ -141,12 +141,12 @@ namespace Xamarin.Forms.Segues {
 		{
 			switch (Action) {
 
-				case SegueAction.Push:
+				case NavigationAction.Push:
 					return SourceElement.Navigation.PushAsync (destination, useDefaultAnimation);
-				case SegueAction.Modal:
+				case NavigationAction.Modal:
 					return SourceElement.Navigation.PushModalAsync (destination, useDefaultAnimation);
 
-				case SegueAction.Pop: {
+				case NavigationAction.Pop: {
 						var srcPage = SourcePage;
 						if (srcPage == null)
 							throw new InvalidOperationException ($"{nameof (SourceElement)} must be on a Page");
@@ -159,7 +159,7 @@ namespace Xamarin.Forms.Segues {
 						return Task.CompletedTask;
 					}
 
-				case SegueAction.MainPage:
+				case NavigationAction.MainPage:
 					Application.Current.MainPage = destination;
 					return Task.CompletedTask;
 			}
@@ -181,7 +181,7 @@ namespace Xamarin.Forms.Segues {
 			}
 			#endif
 			var page = (Page)destination;
-			if (Action == SegueAction.Pop) {
+			if (Action == NavigationAction.Pop) {
 				// Before we can call ExecuteAsync, we must ensure that the destination is
 				//  passed for Pop for subclasses (built-in segs don't care)
 				if (IsSubclass)
@@ -189,7 +189,7 @@ namespace Xamarin.Forms.Segues {
 				// Clear out our previous page on the source page to prevent stale data
 				SourcePage?.SetPreviousPage (null);
 			} else if (destination == null) {
-				throw new ArgumentNullException (nameof (destination), $"May only be null for {nameof (SegueAction.Pop)}");
+				throw new ArgumentNullException (nameof (destination), $"May only be null for {nameof (NavigationAction.Pop)}");
 			} else {
 				page.SetPreviousPage (SourcePage);
 			}
@@ -201,7 +201,7 @@ namespace Xamarin.Forms.Segues {
 		/// </summary>
 		/// <param name="destination">
 		///  Destination <see cref="Page"/>. Should be omitted (<c>null</c>) if and only if
-		///   <see cref="Segue.Action"/> is set to <see cref="SegueAction.Pop"/>.
+		///   <see cref="Segue.Action"/> is set to <see cref="NavigationAction.Pop"/>.
 		/// </param>
 		public async Task ExecuteAsync (VisualElement sourceElement, Page destination = null)
 		{
@@ -221,7 +221,7 @@ namespace Xamarin.Forms.Segues {
 		{
 			// We do allow parameter to be null for a Pop (we'll determine the destination if we're executed)
 			if (parameter == null)
-				return Action == SegueAction.Pop;
+				return Action == NavigationAction.Pop;
 
 			// FIXME: Ideally, we could know the type created by the template w/o instantiating it
 			//  (we can't instantiate it here)

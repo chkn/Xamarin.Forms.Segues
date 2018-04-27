@@ -7,8 +7,8 @@ namespace Xamarin.Forms.Segues {
 	/// <summary>
 	/// The desired action for a segue to perform.
 	/// </summary>
-	[TypeConverter (typeof (SegueActionConverter))]
-	public enum SegueAction {
+	[TypeConverter (typeof (NavigationActionConverter))]
+	public enum NavigationAction {
 		/// <summary>
 		/// Corresponds to calling <see cref="INavigation.PushAsync"/>.
 		/// </summary>
@@ -32,23 +32,23 @@ namespace Xamarin.Forms.Segues {
 		MainPage,
 	}
 
-	public class SegueActionConverter : TypeConverter {
+	public class NavigationActionConverter : TypeConverter {
 
-		public static bool TryParse (string value, out SegueAction action)
+		public static bool TryParse (string value, out NavigationAction action)
 		{
 			switch (value.ToLowerInvariant ()) {
-			case "push"    : action = SegueAction.Push; return true;
-			case "modal"   : action = SegueAction.Modal; return true;
-			case "pop"     : action = SegueAction.Pop; return true;
-			case "mainpage": action = SegueAction.MainPage; return true;
+			case "push"    : action = NavigationAction.Push; return true;
+			case "modal"   : action = NavigationAction.Modal; return true;
+			case "pop"     : action = NavigationAction.Pop; return true;
+			case "mainpage": action = NavigationAction.MainPage; return true;
 			}
-			action = default (SegueAction);
+			action = default (NavigationAction);
 			return false;
 		}
 
-		public static SegueAction Parse (string value)
+		public static NavigationAction Parse (string value)
 		{
-			SegueAction result;
+			NavigationAction result;
 			if (!TryParse (value, out result))
 				throw new ArgumentException ();
 			return result;

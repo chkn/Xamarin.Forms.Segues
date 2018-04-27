@@ -37,7 +37,7 @@
 		<Label Text=" Segue to a Forms Page" BackgroundColor="LightGray" />
 		<ListView SelectedItem="{Binding Action, Mode=TwoWay}">
 			<ListView.ItemsSource>
-				<sys:Enum x:FactoryMethod="GetValues" x:Arguments="{x:Type s:SegueAction}" />
+				<sys:Enum x:FactoryMethod="GetValues" x:Arguments="{x:Type s:NavigationAction}" />
 			</ListView.ItemsSource>
 		</ListView>
 		<Label Text=" Segue Type" BackgroundColor="LightGray" />
